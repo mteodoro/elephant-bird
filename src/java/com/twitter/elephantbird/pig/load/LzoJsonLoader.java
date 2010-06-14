@@ -5,8 +5,11 @@ import java.nio.charset.Charset;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
+
+import org.apache.pig.LoadFunc;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
+import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -84,6 +87,15 @@ public class LzoJsonLoader extends LzoBaseLoadFunc {
       LOG.warn("Very big number exceeds the scale of long: " + line, e);
       incrCounter(LzoJsonLoaderCounters.LinesParseErrorBadNumber, 1L);
       return null;
+    } catch (ClassCastException e) {
+      LOG.warn("Could not convert to Json Object: " + line, e);
+      incrCounter(LzoJsonLoaderCounters.LinesParseError, 1L);
+      return null;
     }
+  }
+  
+  @Override
+  public LoadFunc.RequiredFieldResponse fieldsToRead(LoadFunc.RequiredFieldList requiredFieldList) throws FrontendException {
+      return new LoadFunc.RequiredFieldResponse(false);
   }
 }
